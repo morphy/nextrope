@@ -32,6 +32,11 @@ export class Job extends Entity {
   })
   end?: string;
 
+  @property({
+    type: 'Boolean',
+  })
+  finished: boolean;
+
   @belongsTo(() => User, {name: 'jobuser'})
   userId: number;
 

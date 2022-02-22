@@ -19,6 +19,7 @@ import {
 } from '@loopback/rest';
 import {Job} from '../models';
 import {JobRepository} from '../repositories';
+import {CustomError} from '../custom.error';
 
 export class JobController {
   constructor(
@@ -126,7 +127,21 @@ export class JobController {
     })
     job: Job,
   ): Promise<void> {
-    await this.jobRepository.updateById(id, job);
+    const jobStartDate = new Date((await this.jobRepository.findById(id)).start);
+
+    if (job.end !== undefined) {
+      const jobEndDate = new Date(job.end);
+
+      if (jobEndDate > jobStartDate) {
+        await this.jobRepository.updateById(id, job);
+      }
+      else {
+        throw new CustomError('End date must be greater than start date')
+      }
+    }
+    else {
+      await this.jobRepository.updateById(id, job);
+    }
   }
 
   @put('/jobs/{id}')

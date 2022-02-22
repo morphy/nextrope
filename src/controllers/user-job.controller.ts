@@ -20,6 +20,7 @@ import {
   Job,
 } from '../models';
 import {UserRepository} from '../repositories';
+import {CustomError} from '../custom.error';
 
 export class UserJobController {
   constructor(
@@ -67,7 +68,14 @@ export class UserJobController {
       },
     }) job: Omit<Job, 'id'>,
   ): Promise<Job> {
-    return this.userRepository.jobs(id).create(job);
+    const unfinishedJobs = (await this.userRepository.jobs(id).find({where: {finished: false}})).length;
+
+    if (unfinishedJobs === 0) {
+      return this.userRepository.jobs(id).create(job);
+    }
+    else {
+      throw new CustomError('User has an unfinished task');
+    }
   }
 
   @patch('/users/{id}/jobs', {
